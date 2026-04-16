@@ -134,6 +134,53 @@ Press **`Q`** to quit.
 
 ---
 
+### Step 5 — Interactive practice UI (browser)
+
+```bash
+python app.py
+```
+
+Open **http://localhost:5000** in your browser.
+
+A local web app that lets you study and practise your signs interactively,
+using your trained model and collected images — no extra data needed.
+
+#### How to use it
+
+1. **Pick a sign** — the home screen shows every label in your dataset as a
+   grid of clickable tiles
+2. **Study the reference images** — clicking a tile opens a practice view with
+   up to 6 sample images from your `dataset/images/` folder for that sign.
+   Use the thumbnail strip or the Prev / Next buttons to cycle through them
+   and get a feel for how the sign looks from different angles
+3. **Click "Start Camera"** — grants webcam access (one time, stays active
+   while the page is open)
+4. **Perform the sign** — the webcam panel runs live prediction every 350 ms.
+   The predicted label and confidence appear in real time. A green **MATCH**
+   badge flashes when your prediction matches the selected sign
+5. **Move to the next sign** — click the back arrow to return to the grid and
+   pick another label
+
+#### Files
+
+| File | Purpose |
+|------|---------|
+| `app.py` | Flask backend — serves the UI, images, and runs inference |
+| `practice_ui.html` | Single-page frontend — no build step, no external dependencies |
+
+#### Notes
+
+- `app.py` loads `model.pkl` and `hand_landmarker.task` at startup — run
+  `train_model.py` first if you have not already
+- The confidence threshold in the UI is set to 55 % (lower than `inference.py`
+  because the practice context is forgiving). Adjust `CONF_THRESH` at the top
+  of `practice_ui.html` if needed
+- The camera feed is mirrored in the browser so it feels natural, and the
+  frame sent to the backend is un-mirrored before landmark detection
+- The server only listens on `localhost` — nothing leaves your machine
+
+---
+
 ## Defining your own signs
 
 This pipeline is not limited to ASL or any particular sign language. You can teach it anything:

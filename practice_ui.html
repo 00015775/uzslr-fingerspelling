@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & base ─────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0c0c0f;
+    --surface:   #13131a;
+    --border:    #22222e;
+    --accent:    #7fff6e;
+    --accent2:   #4f8cff;
+    --warn:      #ff6b6b;
+    --text:      #e8e8f0;
+    --muted:     #555568;
+    --card-bg:   #16161f;
+    --radius:    10px;
+    --mono:      'Space Mono', monospace;
+    --display:   'Syne', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--display);
+    overflow-x: hidden;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────────────── */
+  #app {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  header span {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* ── Left panel ───────────────────────────────────────────────────── */
+  #left {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Sign grid ────────────────────────────────────────────────────── */
+  #grid-panel {
+    padding: 28px 32px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  #grid-panel h2 {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-family: var(--mono);
+  }
+
+  #sign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+  }
+
+  .sign-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 18px 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    text-align: center;
+    user-select: none;
+  }
+  .sign-btn:hover {
+    background: #1e1e2a;
+    border-color: var(--accent2);
+    color: var(--accent2);
+    transform: translateY(-2px);
+  }
+  .sign-btn.active {
+    background: #0e1f0e;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Practice panel (hidden until sign selected) ──────────────────── */
+  #practice-panel {
+    display: none;
+    flex-direction: column;
+    padding: 24px 32px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    gap: 16px;
+  }
+  #practice-panel.visible { display: flex; }
+
+  #practice-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #practice-label {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--mono);
+    line-height: 1;
+  }
+  #back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  #back-btn:hover { color: var(--text); border-color: var(--text); }
+
+  /* reference images strip */
+  #ref-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  #ref-strip::-webkit-scrollbar { height: 4px; }
+  #ref-strip::-webkit-scrollbar-track { background: transparent; }
+  #ref-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ref-thumb {
+    flex-shrink: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    background: var(--card-bg);
+  }
+  .ref-thumb:hover { border-color: var(--accent2); transform: scale(1.04); }
+  .ref-thumb.selected { border-color: var(--accent); }
+  .ref-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* big reference image */
+  #ref-big-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-height: 280px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #ref-big {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  #ref-nav {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+  }
+  .nav-btn {
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.1); }
+
+  #ref-counter {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.6);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Right panel — webcam ─────────────────────────────────────────── */
+  #right {
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  #right h2 {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  #cam-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  #webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1); /* mirror */
+  }
+
+  /* prediction overlay */
+  #prediction-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 14px 18px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  #pred-label {
+    font-family: var(--mono);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  #pred-label.match { color: var(--accent); }
+  #pred-label.no-hand { color: var(--muted); font-size: 0.85rem; }
+
+  #pred-conf {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* match badge */
+  #match-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.08em;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #match-badge.show { opacity: 1; transform: scale(1); }
+
+  /* hand status dot */
+  #hand-dot {
+    position: absolute;
+    top: 12px; left: 12px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--warn);
+    transition: background 0.3s;
+  }
+  #hand-dot.ok { background: var(--accent); }
+
+  /* conf bar */
+  #conf-bar-wrap {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  #conf-bar-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  #conf-bar-track {
+    background: var(--border);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  #conf-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    background: var(--accent2);
+    transition: width 0.25s, background 0.25s;
+  }
+  #conf-bar-fill.high { background: var(--accent); }
+
+  /* target reminder */
+  #target-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  #target-box .lbl {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  #target-sign {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  #target-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* idle state message */
+  #idle-msg {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 40px 20px;
+  }
+  #idle-msg .arrow {
+    font-size: 2rem;
+    animation: nudge 1.6s ease-in-out infinite;
+  }
+  #idle-msg p { font-size: 0.85rem; line-height: 1.6; }
+  @keyframes nudge {
+    0%, 100% { transform: translateX(0); }
+    50%       { transform: translateX(-8px); }
+  }
+
+  /* start cam button */
+  #start-cam-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 12px 20px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: opacity 0.15s;
+    width: 100%;
+  }
+  #start-cam-btn:hover { opacity: 0.85; }
+  #start-cam-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* scrollbar global */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>Sign Practice</h1>
+    <span>FINGERSPELLING TRAINER</span>
+  </header>
+
+  <main>
+
+    <!-- ── Left panel ──────────────────────────────────────────────── -->
+    <div id="left">
+
+      <!-- Sign grid -->
+      <div id="grid-panel">
+        <h2>Choose a sign to practice</h2>
+        <div id="sign-grid"><!-- filled by JS --></div>
+      </div>
+
+      <!-- Practice panel (shown when sign is selected) -->
+      <div id="practice-panel">
+        <div id="practice-header">
+          <div id="practice-label">—</div>
+          <button id="back-btn" onclick="clearSign()">&#8592; Back</button>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div id="ref-strip"></div>
+
+        <!-- Big reference image -->
+        <div id="ref-big-wrap">
+          <span id="ref-counter"></span>
+          <img id="ref-big" src="" alt="Reference sign">
+          <div id="ref-nav">
+            <button class="nav-btn" onclick="stepRef(-1)">&#8592; Prev</button>
+            <button class="nav-btn" onclick="stepRef(1)">Next &#8594;</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right panel — webcam ────────────────────────────────────── -->
+    <div id="right">
+      <h2>Webcam — try the sign</h2>
+
+      <div id="cam-wrap">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div id="hand-dot"></div>
+        <div id="prediction-overlay">
+          <div id="pred-label" class="no-hand">—</div>
+          <div id="pred-conf"></div>
+        </div>
+        <div id="match-badge">MATCH</div>
+      </div>
+
+      <div id="conf-bar-wrap">
+        <div id="conf-bar-label">Confidence</div>
+        <div id="conf-bar-track">
+          <div id="conf-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- target box — only shown when a sign is active -->
+      <div id="target-box" style="display:none">
+        <div>
+          <div class="lbl">Target sign</div>
+          <div id="target-sign">—</div>
+        </div>
+        <div id="target-hint">Show this sign to the webcam</div>
+      </div>
+
+      <div id="idle-msg">
+        <div class="arrow">&#8592;</div>
+        <p>Select a sign from the grid<br>to start practising</p>
+      </div>
+
+      <button id="start-cam-btn" onclick="startCamera()">Start Camera</button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentSign   = null;
+let refImages     = [];
+let refIdx        = 0;
+let camStream     = null;
+let predicting    = false;
+let predInterval  = null;
+const PRED_MS     = 350;   // how often we send a frame for prediction
+const CONF_THRESH = 0.55;
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function boot() {
+  const res    = await fetch("/api/labels");
+  const labels = await res.json();
+  const grid   = document.getElementById("sign-grid");
+  grid.innerHTML = "";
+  labels.forEach(({ label }) => {
+    const btn = document.createElement("button");
+    btn.className   = "sign-btn";
+    btn.textContent = label;
+    btn.onclick     = () => selectSign(label);
+    grid.appendChild(btn);
+  });
+}
+
+// ── Sign selection ─────────────────────────────────────────────────────────────
+async function selectSign(label) {
+  currentSign = label;
+
+  // update grid
+  document.querySelectorAll(".sign-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent === label);
+  });
+
+  // show practice panel
+  document.getElementById("practice-panel").classList.add("visible");
+  document.getElementById("practice-label").textContent = label;
+
+  // fetch reference images
+  const res  = await fetch(`/api/images/${label}`);
+  refImages  = await res.json();
+  refIdx     = 0;
+  buildThumbs();
+  showRef(0);
+
+  // update right panel
+  document.getElementById("target-box").style.display = "flex";
+  document.getElementById("target-sign").textContent  = label;
+  document.getElementById("idle-msg").style.display   = "none";
+}
+
+function clearSign() {
+  currentSign = null;
+  document.querySelectorAll(".sign-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("practice-panel").classList.remove("visible");
+  document.getElementById("target-box").style.display = "none";
+  document.getElementById("idle-msg").style.display   = "flex";
+  document.getElementById("pred-label").textContent   = "—";
+  document.getElementById("pred-label").className     = "no-hand";
+  document.getElementById("match-badge").classList.remove("show");
+  setConfBar(0);
+}
+
+// ── Reference images ───────────────────────────────────────────────────────────
+function buildThumbs() {
+  const strip = document.getElementById("ref-strip");
+  strip.innerHTML = "";
+  refImages.forEach((fname, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "ref-thumb" + (i === 0 ? " selected" : "");
+    wrap.onclick   = () => showRef(i);
+    const img  = document.createElement("img");
+    img.src    = `/dataset/images/${fname}`;
+    img.alt    = `Sample ${i + 1}`;
+    wrap.appendChild(img);
+    strip.appendChild(wrap);
+  });
+}
+
+function showRef(idx) {
+  if (!refImages.length) return;
+  refIdx = (idx + refImages.length) % refImages.length;
+  document.getElementById("ref-big").src = `/dataset/images/${refImages[refIdx]}`;
+  document.getElementById("ref-counter").textContent =
+    `${refIdx + 1} / ${refImages.length}`;
+  document.querySelectorAll(".ref-thumb").forEach((el, i) => {
+    el.classList.toggle("selected", i === refIdx);
+  });
+}
+
+function stepRef(delta) {
+  showRef(refIdx + delta);
+}
+
+// ── Camera ────────────────────────────────────────────────────────────────────
+async function startCamera() {
+  const btn = document.getElementById("start-cam-btn");
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: "user" }, audio: false
+    });
+    const video = document.getElementById("webcam");
+    video.srcObject = camStream;
+    btn.textContent = "Camera active";
+    btn.disabled    = true;
+    startPredicting();
+  } catch (e) {
+    btn.textContent = "Camera denied — check permissions";
+  }
+}
+
+// ── Prediction loop ────────────────────────────────────────────────────────────
+function startPredicting() {
+  const video   = document.getElementById("webcam");
+  const canvas  = document.createElement("canvas");
+  canvas.width  = 320;
+  canvas.height = 240;
+  const ctx = canvas.getContext("2d");
+
+  predInterval = setInterval(async () => {
+    if (!video.videoWidth || predicting) return;
+    predicting = true;
+    try {
+      // draw mirrored frame to canvas
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+      ctx.restore();
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
+      const res  = await fetch("/api/predict", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ image: dataUrl }),
+      });
+      const data = await res.json();
+      updatePredUI(data);
+    } catch (_) {}
+    predicting = false;
+  }, PRED_MS);
+}
+
+// ── Prediction UI ─────────────────────────────────────────────────────────────
+function updatePredUI({ label, confidence, hand }) {
+  const predEl  = document.getElementById("pred-label");
+  const confEl  = document.getElementById("pred-conf");
+  const dotEl   = document.getElementById("hand-dot");
+  const badge   = document.getElementById("match-badge");
+
+  dotEl.classList.toggle("ok", hand);
+
+  if (!hand) {
+    predEl.textContent = "No hand";
+    predEl.className   = "no-hand";
+    confEl.textContent = "";
+    badge.classList.remove("show");
+    setConfBar(0);
+    return;
+  }
+
+  const aboveThresh = confidence >= CONF_THRESH;
+  predEl.textContent = aboveThresh ? label : "...";
+  confEl.textContent = aboveThresh ? `${Math.round(confidence * 100)}%` : "";
+  setConfBar(confidence);
+
+  const isMatch = aboveThresh && currentSign && label === currentSign;
+  predEl.className = isMatch ? "match" : "";
+  badge.classList.toggle("show", isMatch);
+}
+
+function setConfBar(conf) {
+  const fill = document.getElementById("conf-bar-fill");
+  fill.style.width = `${Math.round(conf * 100)}%`;
+  fill.classList.toggle("high", conf >= 0.75);
+}
+
+// ── Start ──────────────────────────────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>
