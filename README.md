@@ -4,6 +4,9 @@ A lightweight, webcam-based pipeline for recognising static hand signs — lette
 
 Built with [MediaPipe](https://developers.google.com/mediapipe) for hand tracking and a scikit-learn Random Forest + MLP ensemble for classification.
 
+> [!NOTE]
+> [Watch video demo](https://youtu.be/z8H_-E-4mYI)
+
 ---
 
 ## How it works
