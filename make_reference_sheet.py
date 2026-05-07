@@ -221,7 +221,7 @@ def main():
     # ── title bar ─────────────────────────────────────────────────────────────
     title_h = 50
     title_canvas = np.full((title_h, total_w, 3), (20, 20, 20), dtype=np.uint8)
-    title = f"Sign Language Reference Sheet  ({n} signs)"
+    title = f"Partial Sign Language Reference Sheet  ({n} signs)"
     (tw, th), _ = cv2.getTextSize(title, FONT, 0.75, 2)
     cv2.putText(title_canvas, title,
                 ((total_w - tw)//2, (title_h + th)//2),

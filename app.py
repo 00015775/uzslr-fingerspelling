@@ -87,6 +87,10 @@ build_index()
 def index():
     return send_file(BASE_DIR / "practice_ui.html")
 
+@app.route("/hand_landmarker.task")
+def serve_task():
+    return send_file(TASK_PATH, mimetype="application/octet-stream")
+
 @app.route("/api/labels")
 def api_labels():
     labels = sorted(label_images.keys())
@@ -132,13 +136,15 @@ def api_predict():
     if not result.hand_landmarks:
         return jsonify({"label": None, "confidence": 0, "hand": False})
 
-    features = normalize_landmarks(result.hand_landmarks[0]).reshape(1, -1)
+    lms      = result.hand_landmarks[0]
+    features = normalize_landmarks(lms).reshape(1, -1)
     proba    = clf.predict_proba(features)[0]
     idx      = int(np.argmax(proba))
     label    = str(le.classes_[idx])
     conf     = float(proba[idx])
-    return jsonify({"label": label, "confidence": round(conf, 3), "hand": True})
+    landmarks_xy = [[float(lm.x), float(lm.y)] for lm in lms]
+    return jsonify({"label": label, "confidence": round(conf, 3), "hand": True, "landmarks": landmarks_xy})
 
 if __name__ == "__main__":
     print("Starting Sign Language Practice UI at http://localhost:5000")
-    app.run(debug=False, port=5000)
+    app.run(host="0.0.0.0", port=7860)

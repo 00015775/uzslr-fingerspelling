@@ -100,19 +100,12 @@
   .cam-video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
   .hand-dot { position: absolute; top: 12px; left: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); transition: background 0.3s; }
   .hand-dot.ok { background: var(--accent); }
-  .pred-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 18px; background: linear-gradient(transparent,rgba(0,0,0,0.85)); display: flex; align-items: flex-end; justify-content: space-between; }
-  .pred-lbl { font-family: var(--mono); font-size: 2.2rem; font-weight: 700; color: var(--text); line-height: 1; transition: color 0.2s; }
-  .pred-lbl.match { color: var(--accent); }
-  .pred-lbl.no-hand { color: var(--muted); font-size: 0.85rem; }
-  .pred-conf { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
-  #match-badge { position: absolute; top: 12px; right: 12px; background: var(--accent); color: #000; font-family: var(--mono); font-size: 0.7rem; font-weight: 700; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.08em; opacity: 0; transform: scale(0.8); transition: opacity 0.2s, transform 0.2s; }
-  #match-badge.show { opacity: 1; transform: scale(1); }
+  .status-lbl { position: absolute; top: 0; left: 0; right: 0; padding: 22px 16px; text-align: center; font-family: var(--mono); font-size: 3rem; font-weight: 700; letter-spacing: 0.14em; color: transparent; pointer-events: none; transition: color 0.12s; text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
+  .status-lbl.match { color: var(--accent); }
+  .status-lbl.miss  { color: var(--warn); }
 
-  .conf-bar-wrap { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; }
-  .conf-bar-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
   .conf-bar-track { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
-  .conf-bar-fill { height: 100%; width: 0%; border-radius: 4px; background: var(--accent2); transition: width 0.25s, background 0.25s; }
-  .conf-bar-fill.high { background: var(--accent); }
+  .conf-bar-fill  { height: 100%; width: 0%; border-radius: 4px; background: var(--accent2); transition: width 0.25s; }
 
   #target-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
   #target-box .lbl { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -212,10 +205,16 @@
   #quiz-flash.correct { background: rgba(127,255,110,0.22); opacity: 1; }
   #quiz-flash.wrong   { background: rgba(255,107,107,0.22); opacity: 1; }
 
-  #quiz-cam-status { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding: 5px 14px; border-radius: 20px; white-space: nowrap; }
 
-  #quiz-hold-track { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
-  #quiz-hold-fill  { height: 100%; width: 0%; border-radius: 4px; background: var(--accent2); transition: width 0.15s, background 0.15s; }
+  #view-live.active { display: flex !important; justify-content: center; align-items: flex-start; padding: 20px 28px; overflow: hidden; }
+  #view-ref.active  { display: flex !important; justify-content: center; align-items: flex-start; padding: 28px; overflow-y: auto; }
+  #live-col { display: flex; flex-direction: column; gap: 20px; width: min(calc((100vh - 220px) * 4/3), calc(100vw - 56px)); }
+  #live-col h2 { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-family: var(--mono); }
+
+  .lang-sel { margin-left: auto; display: flex; gap: 4px; }
+  .lang-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+  .lang-btn:hover { color: var(--text); border-color: var(--text); }
+  .lang-btn.active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -230,6 +229,13 @@
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('practice')">Practice</button>
       <button class="tab-btn"        onclick="switchTab('quiz')">Quiz</button>
+      <button class="tab-btn"        onclick="switchTab('live')">Live</button>
+      <button class="tab-btn"        onclick="switchTab('ref')">Reference</button>
+    </div>
+    <div class="lang-sel">
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+      <button class="lang-btn" data-lang="uz" onclick="setLang('uz')">UZ</button>
     </div>
   </header>
 
@@ -253,8 +259,8 @@
             <span id="ref-counter"></span>
             <img id="ref-big" src="" alt="Reference sign">
             <div id="ref-nav">
-              <button class="nav-btn" onclick="stepRef(-1)">&#8592; Prev</button>
-              <button class="nav-btn" onclick="stepRef(1)">Next &#8594;</button>
+              <button id="ref-prev-btn" class="nav-btn" onclick="stepRef(-1)">&#8592; Prev</button>
+              <button id="ref-next-btn" class="nav-btn" onclick="stepRef(1)">Next &#8594;</button>
             </div>
           </div>
         </div>
@@ -264,16 +270,9 @@
         <h2>Webcam — try the sign</h2>
         <div class="cam-box">
           <video id="webcam" class="cam-video" autoplay playsinline muted></video>
+          <canvas id="kp-canvas" width="320" height="240" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
           <div id="hand-dot" class="hand-dot"></div>
-          <div class="pred-overlay">
-            <div id="pred-label" class="pred-lbl no-hand">—</div>
-            <div id="pred-conf" class="pred-conf"></div>
-          </div>
-          <div id="match-badge">MATCH</div>
-        </div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-label">Confidence</div>
-          <div class="conf-bar-track"><div id="conf-bar-fill" class="conf-bar-fill"></div></div>
+          <div id="status-label" class="status-lbl"></div>
         </div>
         <div id="target-box" style="display:none">
           <div>
@@ -303,7 +302,7 @@
             <div id="quiz-intro-icon">&#9654;</div>
             <div id="quiz-intro-title">Sign Quiz</div>
             <div id="quiz-intro-sub">Every sign in your dataset, in random order.<br>Hold each sign steady to advance.</div>
-            <div id="quiz-sign-count-badge"><span id="quiz-sign-count">—</span> signs</div>
+            <div id="quiz-sign-count-badge"><span id="quiz-sign-count">—</span> <span id="quiz-sign-suffix">signs</span></div>
           </div>
           <button id="quiz-start-btn" onclick="startQuiz()">Start Quiz</button>
         </div>
@@ -351,18 +350,10 @@
 
         <div class="cam-box">
           <video id="webcam-quiz" class="cam-video" autoplay playsinline muted></video>
+          <canvas id="kp-canvas-quiz" width="320" height="240" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
           <div id="hand-dot-quiz" class="hand-dot"></div>
-          <div id="quiz-cam-status">Start quiz to begin</div>
+          <div id="quiz-status-label" class="status-lbl"></div>
           <div id="quiz-flash"></div>
-          <div class="pred-overlay">
-            <div id="quiz-pred-label" class="pred-lbl no-hand">—</div>
-            <div id="quiz-pred-conf" class="pred-conf"></div>
-          </div>
-        </div>
-
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-label">Hold progress</div>
-          <div id="quiz-hold-track"><div id="quiz-hold-fill"></div></div>
         </div>
 
         <button id="start-cam-btn-quiz" class="cam-start-btn" onclick="startCameraQuiz()">Start Camera</button>
@@ -370,28 +361,309 @@
 
     </div><!-- /view-quiz -->
 
+    <!-- ═══════════════════ LIVE VIEW ════════════════════════════════════ -->
+    <div id="view-live" class="view" style="height:100%;">
+      <div id="live-col">
+        <h2 id="live-header">Live Detection</h2>
+        <div class="cam-box">
+          <video id="webcam-live" class="cam-video" autoplay playsinline muted></video>
+          <canvas id="kp-canvas-live" width="320" height="240" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+          <div id="hand-dot-live" class="hand-dot"></div>
+        </div>
+        <button id="start-cam-btn-live" class="cam-start-btn" onclick="startCameraLive()">Start Camera</button>
+      </div>
+    </div><!-- /view-live -->
+
+    <!-- ═══════════════════ REFERENCE VIEW ══════════════════════════════ -->
+    <div id="view-ref" class="view" style="height:100%;display:none;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:min(1200px,100%);">
+        <h2 id="ref-header" style="font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);align-self:flex-start;">Reference Sheet</h2>
+        <img src="/reference_sheet.png" alt="Sign Language Reference Sheet"
+          style="width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;">
+      </div>
+    </div><!-- /view-ref -->
+
   </main>
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════════════
+// INTERNATIONALISATION
+// ══════════════════════════════════════════════════════════════════════
+const LANGS = {
+  en: {
+    appTitle:'Sign Practice', tabPractice:'Practice', tabQuiz:'Quiz',
+    gridHeader:'Choose a sign to practice',
+    camHeader:'Webcam — try the sign',
+    back:'← Back', targetLabel:'Target sign',
+    targetHint:'Show this sign to the webcam',
+    idleMsg:'Select a sign from the grid<br>to start practising',
+    startCamera:'Start Camera', cameraActive:'Camera active', cameraDenied:'Camera denied',
+    match:'MATCH', missed:'MISSED',
+    quizTitle:'Sign Quiz',
+    quizSub:'Every sign in your dataset, in random order.<br>Hold each sign steady to advance.',
+    signsSuffix:'signs', startQuiz:'Start Quiz', stopQuiz:'Stop quiz',
+    scoreLabel:'Score:', showSign:'Show this sign', holdText:'Hold…',
+    quizCamHdr:'Webcam — perform the sign',
+    resultsTitle:'Quiz complete', correct:'Correct', missedRes:'Missed', tryAgain:'Try again',
+    prev:'← Prev', next:'Next →',
+    tabLive:'Live', liveHeader:'Live Detection',
+    tabRef:'Reference', refHeader:'Reference Sheet',
+  },
+  ru: {
+    appTitle:'Практика жестов',
+    tabPractice:'Практика', tabQuiz:'Тест',
+    gridHeader:'Выберите жест для практики',
+    camHeader:'Камера — покажите жест',
+    back:'← Назад',
+    targetLabel:'Целевой жест',
+    targetHint:'Покажите этот жест камере',
+    idleMsg:'Выберите жест из сетки,<br>чтобы начать практику',
+    startCamera:'Запустить камеру',
+    cameraActive:'Камера активна',
+    cameraDenied:'Нет доступа',
+    match:'ВЕРНО', missed:'ОШИБКА',
+    quizTitle:'Тест по жестам',
+    quizSub:'Все жесты в случайном порядке.<br>Удерживайте жест для продвижения.',
+    signsSuffix:'жестов',
+    startQuiz:'Начать тест',
+    stopQuiz:'Остановить',
+    scoreLabel:'Счёт:', showSign:'Покажите этот жест',
+    holdText:'Держите…',
+    quizCamHdr:'Камера — выполните жест',
+    resultsTitle:'Тест завершён',
+    correct:'Верно', missedRes:'Пропущено',
+    tryAgain:'Попробовать снова',
+    prev:'← Назад', next:'Вперёд →',
+    tabLive:'Эфир', liveHeader:'Распознавание жестов',
+    tabRef:'Справка', refHeader:'Справочная таблица',
+  },
+  uz: {
+    appTitle:"Ishoralar Mashqi", tabPractice:"Mashq", tabQuiz:"Test",
+    gridHeader:"Mashq qilish uchun ishorani tanlang",
+    camHeader:"Kamera — ishorani sinab koʻring",
+    back:"← Orqaga", targetLabel:"Maqsad ishorasi",
+    targetHint:"Bu ishorani kameraga koʻrsating",
+    idleMsg:"Mashqni boshlash uchun<br>paneldan ishorani tanlang",
+    startCamera:"Kamerani yoqish", cameraActive:"Kamera yoqilgan", cameraDenied:"Ruxsat yoʻq",
+    match:"TOʻGʻRI", missed:"XATO",
+    quizTitle:"Ishoralar Testi",
+    quizSub:"Barcha ishoralar tasodifiy tartibda.<br>Davom etish uchun ishorani ushlab turing.",
+    signsSuffix:"ishora", startQuiz:"Testni boshlash", stopQuiz:"Toʻxtatish",
+    scoreLabel:"Ball:", showSign:"Bu ishorani koʻrsating", holdText:"Ushlab turing…",
+    quizCamHdr:"Kamera — ishorani bajaring",
+    resultsTitle:"Test yakunlandi", correct:"Toʻgʻri", missedRes:"Oʻtkazib yuborildi",
+    tryAgain:"Qayta urinish", prev:"← Oldingi", next:"Keyingi →",
+    tabLive:"Jonli", liveHeader:"Jonli aniqlash",
+    tabRef:"Jadval", refHeader:"Ishoralar jadvali",
+  },
+};
+
+let currentLang = localStorage.getItem('lang') || 'en';
+
+function t(key) {
+  return (LANGS[currentLang] && LANGS[currentLang][key]) || LANGS.en[key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  applyTranslations();
+}
+
+function applyTranslations() {
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === currentLang));
+  // Header & tabs
+  document.querySelector('header h1').textContent = t('appTitle');
+  const tabs = document.querySelectorAll('.tab-btn');
+  tabs[0].textContent = t('tabPractice');
+  tabs[1].textContent = t('tabQuiz');
+  tabs[2].textContent = t('tabLive');
+  tabs[3].textContent = t('tabRef');
+  // Practice left
+  document.querySelector('#grid-panel h2').textContent    = t('gridHeader');
+  document.getElementById('back-btn').textContent         = t('back');
+  document.querySelector('#target-box .lbl').textContent  = t('targetLabel');
+  document.getElementById('target-hint').textContent      = t('targetHint');
+  document.querySelector('#idle-msg p').innerHTML         = t('idleMsg');
+  // Practice right
+  document.querySelector('.right-col h2').textContent     = t('camHeader');
+  const camBtn = document.getElementById('start-cam-btn');
+  camBtn.textContent = practiceCamState === 'active' ? t('cameraActive')
+                     : practiceCamState === 'denied' ? t('cameraDenied')
+                     : t('startCamera');
+  // Nav buttons
+  document.getElementById('ref-prev-btn').textContent = t('prev');
+  document.getElementById('ref-next-btn').textContent = t('next');
+  // Status labels
+  const sl = document.getElementById('status-label');
+  if (sl.classList.contains('match')) sl.textContent = t('match');
+  // Quiz left
+  document.getElementById('quiz-intro-title').textContent = t('quizTitle');
+  document.getElementById('quiz-intro-sub').innerHTML     = t('quizSub');
+  document.getElementById('quiz-sign-suffix').textContent = t('signsSuffix');
+  document.getElementById('quiz-start-btn').textContent   = t('startQuiz');
+  document.getElementById('quiz-stop-btn').textContent    = t('stopQuiz');
+  document.getElementById('quiz-prompt-sub').textContent  = t('showSign');
+  if (quizRunning) {
+    const sc = quizResults.filter(r => r.ok).length;
+    document.getElementById('quiz-score-text').textContent = `${t('scoreLabel')} ${sc}`;
+  }
+  // Quiz right
+  document.querySelector('#quiz-right h2').textContent    = t('quizCamHdr');
+  const qBtn = document.getElementById('start-cam-btn-quiz');
+  qBtn.textContent = quizCamState === 'active' ? t('cameraActive')
+                   : quizCamState === 'denied' ? t('cameraDenied')
+                   : t('startCamera');
+  const qs = document.getElementById('quiz-status-label');
+  if (qs.classList.contains('match')) qs.textContent = t('match');
+  else if (qs.classList.contains('miss')) qs.textContent = t('missed');
+  // Results
+  document.getElementById('results-title').textContent   = t('resultsTitle');
+  document.getElementById('quiz-retry-btn').textContent  = t('tryAgain');
+  // Live
+  document.getElementById('live-header').textContent = t('liveHeader');
+  // Reference
+  document.getElementById('ref-header').textContent = t('refHeader');
+  const lBtn = document.getElementById('start-cam-btn-live');
+  lBtn.textContent = liveCamState === 'active' ? t('cameraActive')
+                   : liveCamState === 'denied' ? t('cameraDenied')
+                   : t('startCamera');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// MEDIAPIPE JS — real-time keypoints (runs in browser, no HTTP lag)
+// ══════════════════════════════════════════════════════════════════════
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+let mpLandmarker = null;
+
+async function initMediaPipe() {
+  try {
+    const { HandLandmarker, FilesetResolver } = await import(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs"
+    );
+    const fileset = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    mpLandmarker = await HandLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: "/hand_landmarker.task", delegate: "GPU" },
+      runningMode: "IMAGE",
+      numHands: 1,
+      minHandDetectionConfidence: 0.6,
+      minHandPresenceConfidence: 0.6,
+    });
+  } catch (e) { console.warn("MediaPipe JS init failed:", e); }
+}
+
+// Offscreen canvas used to feed MediaPipe exactly what the display shows:
+// mirrors the video (matching CSS scaleX(-1)) and crops to 4:3 (matching object-fit:cover).
+const _mpCanvas = document.createElement('canvas');
+_mpCanvas.width  = 320;
+_mpCanvas.height = 240;
+const _mpCtx = _mpCanvas.getContext('2d');
+
+function captureDisplayedFrame(video) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const dstW = _mpCanvas.width, dstH = _mpCanvas.height;
+  const srcAR = vw / vh, dstAR = dstW / dstH;
+  let sx, sy, sw, sh;
+  if (srcAR > dstAR) { // source wider than 4:3 → crop the sides
+    sh = vh; sw = vh * dstAR; sx = (vw - sw) / 2; sy = 0;
+  } else {             // source taller than 4:3 → crop top/bottom
+    sw = vw; sh = vw / dstAR; sx = 0; sy = (vh - sh) / 2;
+  }
+  _mpCtx.save();
+  _mpCtx.scale(-1, 1); // mirror to match CSS scaleX(-1) on the video element
+  _mpCtx.drawImage(video, sx, sy, sw, sh, -dstW, 0, dstW, dstH);
+  _mpCtx.restore();
+  return _mpCanvas;
+}
+
+function startKeypointLoop(videoId, canvasId) {
+  const video  = document.getElementById(videoId);
+  const canvas = document.getElementById(canvasId);
+  const ctx    = canvas.getContext('2d');
+  (function loop() {
+    if (mpLandmarker && video.videoWidth > 0) {
+      try {
+        const frame = captureDisplayedFrame(video);
+        if (frame) {
+          const r = mpLandmarker.detect(frame);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (r.landmarks && r.landmarks.length > 0)
+            drawHandOverlay(ctx, canvas.width, canvas.height, r.landmarks[0]);
+        }
+      } catch(_) {}
+    }
+    requestAnimationFrame(loop);
+  })();
+}
+
+// Matches inference.py draw_hand() exactly:
+// green lines rgb(0,200,0) thickness 2 + white dots radius 1.5 + dark-green outline
+function drawHandOverlay(ctx, W, H, landmarks) {
+  // No x-flip needed: captureDisplayedFrame already mirrors the frame,
+  // so landmark coords map directly onto the displayed video.
+  const pts = landmarks.map(lm => [lm.x * W, lm.y * H]);
+  ctx.strokeStyle = 'rgb(0,200,0)';
+  ctx.lineWidth = 2;
+  for (const [a, b] of HAND_CONNECTIONS) {
+    ctx.beginPath();
+    ctx.moveTo(pts[a][0], pts[a][1]);
+    ctx.lineTo(pts[b][0], pts[b][1]);
+    ctx.stroke();
+  }
+  for (const [px, py] of pts) {
+    ctx.beginPath();
+    ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgb(0,150,0)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // GLOBALS
 // ══════════════════════════════════════════════════════════════════════
 const PRED_MS = 300;
 const PRACTICE_CONF = 0.55;
 const QUIZ_CONF  = 0.65;
-const QUIZ_HOLD  = 3;
+const QUIZ_HOLD  = 1.5;
 
 let allLabels = [];
+let practiceCamState = null; // null | 'active' | 'denied'
+let quizCamState     = null;
+let liveCamState     = null;
+let livePredLabel    = null;
+let livePredConf     = 0;
+let livePredBusy     = false;
 
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) =>
-    b.classList.toggle('active', ['practice','quiz'][i] === tab));
+    b.classList.toggle('active', ['practice','quiz','live','ref'][i] === tab));
   document.getElementById('view-practice').classList.toggle('active', tab === 'practice');
   document.getElementById('view-quiz').classList.toggle('active',    tab === 'quiz');
+  document.getElementById('view-live').classList.toggle('active',    tab === 'live');
+  document.getElementById('view-ref').classList.toggle('active',     tab === 'ref');
 }
 
 async function boot() {
+  initMediaPipe(); // start loading in parallel, no await
+  applyTranslations();
   const labels = await (await fetch('/api/labels')).json();
   allLabels    = labels.map(l => l.label);
   document.getElementById('quiz-sign-count').textContent = allLabels.length;
@@ -433,10 +705,8 @@ function clearSign() {
   document.getElementById('practice-panel').classList.remove('visible');
   document.getElementById('target-box').style.display = 'none';
   document.getElementById('idle-msg').style.display   = 'flex';
-  document.getElementById('pred-label').textContent   = '—';
-  document.getElementById('pred-label').className     = 'pred-lbl no-hand';
-  document.getElementById('match-badge').classList.remove('show');
-  setPracticeBar(0);
+  const s = document.getElementById('status-label');
+  s.className = 'status-lbl'; s.textContent = '';
 }
 
 function buildThumbs() {
@@ -465,9 +735,11 @@ async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'}, audio:false });
     document.getElementById('webcam').srcObject = stream;
-    btn.textContent = 'Camera active'; btn.disabled = true;
+    practiceCamState = 'active';
+    btn.textContent = t('cameraActive'); btn.disabled = true;
     startPracticeLoop();
-  } catch { btn.textContent = 'Camera denied'; }
+    startKeypointLoop('webcam', 'kp-canvas');
+  } catch { practiceCamState = 'denied'; btn.textContent = t('cameraDenied'); }
 }
 
 function startPracticeLoop() {
@@ -487,27 +759,11 @@ function startPracticeLoop() {
 }
 
 function updatePracticeUI({ label, confidence, hand }) {
-  const predEl = document.getElementById('pred-label');
-  const confEl = document.getElementById('pred-conf');
   document.getElementById('hand-dot').classList.toggle('ok', hand);
-  if (!hand) {
-    predEl.textContent='No hand'; predEl.className='pred-lbl no-hand';
-    confEl.textContent='';
-    document.getElementById('match-badge').classList.remove('show');
-    setPracticeBar(0); return;
-  }
-  const above = confidence >= PRACTICE_CONF;
-  predEl.textContent = above ? label : '...';
-  confEl.textContent = above ? `${Math.round(confidence*100)}%` : '';
-  predEl.className   = 'pred-lbl' + (above && currentSign && label===currentSign ? ' match' : '');
-  setPracticeBar(confidence);
-  document.getElementById('match-badge').classList.toggle('show', above && currentSign && label===currentSign);
-}
-
-function setPracticeBar(conf) {
-  const fill = document.getElementById('conf-bar-fill');
-  fill.style.width = `${Math.round(conf*100)}%`;
-  fill.classList.toggle('high', conf >= 0.75);
+  const statusEl = document.getElementById('status-label');
+  const isMatch  = hand && confidence >= PRACTICE_CONF && currentSign && label === currentSign;
+  statusEl.className   = isMatch ? 'status-lbl match' : 'status-lbl';
+  statusEl.textContent = isMatch ? t('match') : '';
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -568,11 +824,10 @@ function advanceQuiz() {
   document.getElementById('quiz-prompt-sign').className     = '';
   document.getElementById('quiz-streak').textContent        = '';
   document.getElementById('quiz-progress-text').textContent = `${quizIdx+1} / ${quizSeq.length}`;
-  document.getElementById('quiz-score-text').textContent    = `Score: ${quizResults.filter(r=>r.ok).length}`;
+  document.getElementById('quiz-score-text').textContent    = `${t('scoreLabel')} ${quizResults.filter(r=>r.ok).length}`;
   document.getElementById('quiz-progress-fill').style.width = `${(quizIdx/quizSeq.length)*100}%`;
-  document.getElementById('quiz-hold-fill').style.width     = '0%';
-  document.getElementById('quiz-cam-status').textContent    = `Show: ${sign}`;
-  document.getElementById('quiz-cam-status').style.color    = 'var(--muted)';
+  const qs = document.getElementById('quiz-status-label');
+  qs.className = 'status-lbl'; qs.textContent = '';
   quizSeq.forEach((_,i) => {
     const c = document.getElementById(`chip-${i}`);
     if (!c) return;
@@ -595,7 +850,7 @@ function finishQuiz() {
   quizResults.forEach(({sign, ok}) => {
     const row = document.createElement('div');
     row.className = 'result-row';
-    row.innerHTML = `<span class="r-sign">${sign}</span><span class="${ok?'r-ok':'r-fail'}">${ok?'Correct':'Missed'}</span>`;
+    row.innerHTML = `<span class="r-sign">${sign}</span><span class="${ok?'r-ok':'r-fail'}">${ok?t('correct'):t('missedRes')}</span>`;
     bd.appendChild(row);
   });
   document.getElementById('quiz-progress-fill').style.width = '100%';
@@ -606,9 +861,105 @@ async function startCameraQuiz() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'}, audio:false });
     document.getElementById('webcam-quiz').srcObject = stream;
-    btn.textContent = 'Camera active'; btn.disabled = true;
+    quizCamState = 'active';
+    btn.textContent = t('cameraActive'); btn.disabled = true;
     startQuizLoop();
-  } catch { btn.textContent = 'Camera denied'; }
+    startKeypointLoop('webcam-quiz', 'kp-canvas-quiz');
+  } catch { quizCamState = 'denied'; btn.textContent = t('cameraDenied'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LIVE DETECTION MODE
+// ══════════════════════════════════════════════════════════════════════
+async function startCameraLive() {
+  const btn = document.getElementById('start-cam-btn-live');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'}, audio:false });
+    document.getElementById('webcam-live').srcObject = stream;
+    liveCamState = 'active';
+    btn.textContent = t('cameraActive'); btn.disabled = true;
+    startLiveKeypointLoop();
+    startLivePredLoop();
+  } catch { liveCamState = 'denied'; btn.textContent = t('cameraDenied'); }
+}
+
+function confColor(c) {
+  if (c >= 0.85) return 'rgb(0,210,0)';
+  if (c >= 0.65) return 'rgb(200,200,0)';
+  return 'rgb(210,80,0)';
+}
+
+function drawBBoxAndLabel(ctx, W, H, landmarks) {
+  const pad = 8;
+  const xs  = landmarks.map(lm => lm.x * W);
+  const ys  = landmarks.map(lm => lm.y * H);
+  const x1  = Math.max(0, Math.min(...xs) - pad);
+  const y1  = Math.max(0, Math.min(...ys) - pad);
+  const x2  = Math.min(W, Math.max(...xs) + pad);
+  const y2  = Math.min(H, Math.max(...ys) + pad);
+
+  ctx.strokeStyle = 'rgb(0,220,0)';
+  ctx.lineWidth   = 1.5;
+  ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+  if (livePredLabel && livePredConf >= PRACTICE_CONF) {
+    const color = confColor(livePredConf);
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'bold 22px monospace';
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillText(livePredLabel, x1 + 1, y1 - 2);
+    // label
+    ctx.fillStyle = color;
+    ctx.fillText(livePredLabel, x1, y1 - 3);
+    // confidence after label
+    const lw = ctx.measureText(livePredLabel).width;
+    ctx.font = '10px monospace';
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillText(`${Math.round(livePredConf*100)}%`, x1 + lw + 3, y1 - 2);
+    ctx.fillStyle = color;
+    ctx.fillText(`${Math.round(livePredConf*100)}%`, x1 + lw + 2, y1 - 3);
+  }
+}
+
+function startLiveKeypointLoop() {
+  const video  = document.getElementById('webcam-live');
+  const canvas = document.getElementById('kp-canvas-live');
+  const ctx    = canvas.getContext('2d');
+  (function loop() {
+    if (mpLandmarker && video.videoWidth > 0) {
+      try {
+        const frame = captureDisplayedFrame(video);
+        if (frame) {
+          const r = mpLandmarker.detect(frame);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (r.landmarks && r.landmarks.length > 0) {
+            const lms = r.landmarks[0];
+            drawHandOverlay(ctx, canvas.width, canvas.height, lms);
+            drawBBoxAndLabel(ctx, canvas.width, canvas.height, lms);
+          }
+        }
+      } catch(_) {}
+    }
+    requestAnimationFrame(loop);
+  })();
+}
+
+function startLivePredLoop() {
+  const video  = document.getElementById('webcam-live');
+  const canvas = document.createElement('canvas'); canvas.width=320; canvas.height=240;
+  const ctx    = canvas.getContext('2d');
+  setInterval(async () => {
+    if (!video.videoWidth || livePredBusy) return;
+    livePredBusy = true;
+    try {
+      ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-canvas.width,0,canvas.width,canvas.height); ctx.restore();
+      const data = await (await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:canvas.toDataURL('image/jpeg',0.7)})})).json();
+      livePredLabel = (data.hand && data.confidence >= PRACTICE_CONF) ? data.label : null;
+      livePredConf  = data.hand ? data.confidence : 0;
+    } catch(_) {}
+    livePredBusy = false;
+  }, PRED_MS);
 }
 
 function startQuizLoop() {
@@ -629,45 +980,25 @@ function startQuizLoop() {
 }
 
 function handleQuizFrame({ label, confidence, hand }) {
-  const predEl = document.getElementById('quiz-pred-label');
-  const confEl = document.getElementById('quiz-pred-conf');
   document.getElementById('hand-dot-quiz').classList.toggle('ok', hand);
-
   if (!hand) {
-    predEl.textContent = 'No hand'; predEl.className = 'pred-lbl no-hand';
-    confEl.textContent = '';
     if (quizRunning && !quizLocked) quizHold = 0;
-    document.getElementById('quiz-hold-fill').style.width = '0%';
     return;
   }
-
   const { conf: thresh, hold: holdNeeded } = quizSettings();
   const above = confidence >= thresh;
-  predEl.textContent = above ? label : '...';
-  predEl.className   = 'pred-lbl';
-  confEl.textContent = above ? `${Math.round(confidence*100)}%` : '';
-
   if (!quizRunning || quizLocked || !above) {
     if (!above) quizHold = 0;
-    document.getElementById('quiz-hold-fill').style.width = '0%';
     return;
   }
-
   const target = quizSeq[quizIdx];
-
   if (label === target) {
     quizHold++;
-    const pct = Math.min(100, Math.round((quizHold / holdNeeded) * 100));
-    const fill = document.getElementById('quiz-hold-fill');
-    fill.style.width = `${pct}%`; fill.style.background = 'var(--accent)';
     document.getElementById('quiz-streak').textContent =
-      quizHold >= holdNeeded ? '' : `Hold... ${quizHold}/${holdNeeded}`;
+      quizHold >= holdNeeded ? '' : `${t('holdText')} ${quizHold}/${holdNeeded}`;
     if (quizHold >= holdNeeded) registerResult(true);
   } else {
-    // wrong sign shown — reset hold but don't auto-fail; user can correct themselves
     quizHold = 0;
-    const fill = document.getElementById('quiz-hold-fill');
-    fill.style.width = '0%'; fill.style.background = 'var(--accent2)';
   }
 }
 
@@ -675,14 +1006,14 @@ function registerResult(ok) {
   quizLocked = true;
   quizResults.push({ sign: quizSeq[quizIdx], ok });
 
-  const signEl   = document.getElementById('quiz-prompt-sign');
-  const flashEl  = document.getElementById('quiz-flash');
-  const statusEl = document.getElementById('quiz-cam-status');
+  const signEl    = document.getElementById('quiz-prompt-sign');
+  const flashEl   = document.getElementById('quiz-flash');
+  const statusEl  = document.getElementById('quiz-status-label');
 
-  signEl.className  = ok ? 'correct' : 'wrong';
-  flashEl.className = ok ? 'correct' : 'wrong';
-  statusEl.textContent = ok ? 'Correct!' : 'Missed';
-  statusEl.style.color = ok ? 'var(--accent)' : 'var(--warn)';
+  signEl.className     = ok ? 'correct' : 'wrong';
+  flashEl.className    = ok ? 'correct' : 'wrong';
+  statusEl.textContent = ok ? t('match') : t('missed');
+  statusEl.className   = ok ? 'status-lbl match' : 'status-lbl miss';
 
   setTimeout(() => {
     flashEl.className = '';
